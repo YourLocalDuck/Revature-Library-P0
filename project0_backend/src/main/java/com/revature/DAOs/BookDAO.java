@@ -3,10 +3,12 @@ package com.revature.DAOs;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.revature.Exceptions.DoesntExistException;
 import com.revature.models.Book;
 import com.revature.utils.ConnectionUtil;
 
@@ -60,7 +62,7 @@ public class BookDAO implements BookDAOInterface {
     }
 
     @Override
-    public List<Book> getBooksByUser(int user_id) {
+    public List<Book> getBooksByUser(int user_id){
         List<Book> allBooks = new ArrayList<Book>();
 
         try (Connection conn = ConnectionUtil.getConnection()) {
@@ -114,7 +116,7 @@ public class BookDAO implements BookDAOInterface {
     }
 
     @Override
-    public Book updateBook(Book book) {
+    public Book updateBook(Book book) throws SQLException {
         try (Connection conn = ConnectionUtil.getConnection()) {
             String sql = "UPDATE books SET book_title = ?, book_author = ?, book_rating = ?, checked_out = ?, checked_out_by_fk = ? WHERE book_id = ?";
 
@@ -130,14 +132,15 @@ public class BookDAO implements BookDAOInterface {
 
             if (rowsUpdated > 0)
                 return book;
-        } catch (Exception e) {
-            e.printStackTrace();
+            else
+                throw new DoesntExistException();
+        } catch (SQLException e) {
+            throw e;
         }
-        return null;
     }
 
     @Override
-    public boolean deleteBook(int id) {
+    public boolean deleteBook(int id) throws SQLException {
         try (Connection conn = ConnectionUtil.getConnection()) {
             String sql = "DELETE FROM books WHERE book_id = ?";
 
@@ -148,14 +151,16 @@ public class BookDAO implements BookDAOInterface {
 
             if (rowsUpdated > 0)
                 return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+            else
+                throw new DoesntExistException();
+        } catch (SQLException e) {
+            throw e;
         }
-        return false;
+
     }
 
     @Override
-    public boolean returnBook(int id) {
+    public boolean returnBook(int id) throws SQLException {
         try (Connection conn = ConnectionUtil.getConnection()) {
             String sql = "UPDATE books SET checked_out = false, checked_out_by_fk = 0 WHERE book_id = ?";
 
@@ -166,10 +171,11 @@ public class BookDAO implements BookDAOInterface {
 
             if (rowsUpdated > 0)
                 return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+            else
+                throw new DoesntExistException();
+        } catch (SQLException e) {
+            throw e;
         }
-        return false;
     }
 
 }

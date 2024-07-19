@@ -3,10 +3,13 @@ package com.revature.DAOs;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.revature.Exceptions.DoesntExistException;
+import com.revature.Exceptions.UserHasBooksCheckedOutException;
 import com.revature.models.User;
 import com.revature.utils.ConnectionUtil;
 
@@ -71,7 +74,7 @@ public class UserDAO implements UserDAOInterface {
 
             ResultSet result = statement.getGeneratedKeys();
             int userId = 0;
-            while(result.next()) {
+            while (result.next()) {
                 userId = result.getInt("user_id");
             }
             user.setUser_id(userId);
@@ -85,7 +88,7 @@ public class UserDAO implements UserDAOInterface {
     }
 
     @Override
-    public User updateUser(User user) {
+    public User updateUser(User user) throws SQLException{
         try (Connection conn = ConnectionUtil.getConnection()) {
             String sql = "UPDATE users SET username = ?, email = ? WHERE user_id = ?";
 
@@ -98,14 +101,15 @@ public class UserDAO implements UserDAOInterface {
 
             if (rowsUpdated > 0)
                 return user;
-        } catch (Exception e) {
-            e.printStackTrace();
+            else
+                throw new DoesntExistException();
+        } catch (SQLException e) {
+            throw e;
         }
-        return null;
     }
 
     @Override
-    public boolean deleteUser(int id) {
+    public boolean deleteUser(int id) throws SQLException {
         try (Connection conn = ConnectionUtil.getConnection()) {
             String sql = "DELETE FROM users WHERE user_id = ?";
 
@@ -116,9 +120,15 @@ public class UserDAO implements UserDAOInterface {
 
             if (rowsUpdated > 0)
                 return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+            else
+                throw new DoesntExistException();
+        } catch (SQLException e) {
+            if (e.getSQLState().equals("23503")) {
+                throw new UserHasBooksCheckedOutException();
+            } else {
+                // Rethrow any other exceptions
+                throw e;
+            }
         }
-        return false;
     }
 }

@@ -1,6 +1,8 @@
 package com.revature.controllers;
 
 import com.revature.DAOs.UserDAO;
+import com.revature.Exceptions.DoesntExistException;
+import com.revature.Exceptions.UserHasBooksCheckedOutException;
 import com.revature.models.User;
 
 import io.javalin.http.Handler;
@@ -43,23 +45,41 @@ public class UserController {
         int id = Integer.parseInt(ctx.pathParam("id"));
         User user = ctx.bodyAsClass(com.revature.models.User.class);
         user.setUser_id(id);
-        User updatedUser = userDAO.updateUser(user);
-
-        if (updatedUser != null) {
-            ctx.json(updatedUser);
-            ctx.status(200);
-        } else {
-            ctx.json("Invalid Input");
+        try {
+            User updatedUser = userDAO.updateUser(user);
+            if (updatedUser != null) {
+                ctx.json(updatedUser);
+                ctx.status(200);
+            } else {
+                ctx.json("Invalid Input");
+                ctx.status(400);
+            }
+        } catch (DoesntExistException e) {
+            ctx.json("User Doesn't exist");
+            ctx.status(400);
+        } catch (Exception e) {
+            ctx.json("Invalid Request");
             ctx.status(400);
         }
     };
 
     public Handler deleteUserHandler = (ctx) -> {
         int id = Integer.parseInt(ctx.pathParam("id"));
-        boolean deleted = userDAO.deleteUser(id);
-        if (deleted) {
-            ctx.status(204);
-        } else {
+        try {
+            boolean deleted = userDAO.deleteUser(id);
+            if (deleted) {
+                ctx.status(204);
+            } else {
+                ctx.json("Invalid Request");
+                ctx.status(400);
+            }
+        } catch (DoesntExistException e) {
+            ctx.json("User Doesn't exist");
+            ctx.status(400);
+        } catch (UserHasBooksCheckedOutException e) {
+            ctx.json("User has books checked out");
+            ctx.status(400);
+        } catch (Exception e) {
             ctx.json("Invalid Request");
             ctx.status(400);
         }

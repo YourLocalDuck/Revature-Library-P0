@@ -1,13 +1,14 @@
 package com.revature.controllers;
 
 import com.revature.DAOs.BookDAO;
+import com.revature.Exceptions.DoesntExistException;
 import com.revature.models.Book;
 
 import io.javalin.http.Handler;
 
 public class BookController {
     BookDAO bookDAO = new BookDAO();
-    
+
     public Handler getAllBooksHandler = (ctx) -> {
         ctx.json(bookDAO.getAllBooks());
     };
@@ -22,7 +23,7 @@ public class BookController {
             ctx.json("Book doesn't exist");
             ctx.status(400);
         }
-        
+
     };
 
     public Handler getBookByUserHandler = (ctx) -> {
@@ -46,34 +47,60 @@ public class BookController {
         int id = Integer.parseInt(ctx.pathParam("id"));
         Book book = ctx.bodyAsClass(com.revature.models.Book.class);
         book.setBook_id(id);
-        Book updatedBook = bookDAO.updateBook(book);
-        if (updatedBook != null) {
-            ctx.json(updatedBook);
-            ctx.status(200);
-        } else {
-            ctx.json("Invalid Input");
+        try {
+            Book updatedBook = bookDAO.updateBook(book);
+            if (updatedBook != null) {
+                ctx.json(updatedBook);
+                ctx.status(200);
+            } else {
+                ctx.json("Invalid Input");
+                ctx.status(400);
+            }
+        } catch (DoesntExistException e) {
+            ctx.json("Book doesn't exist");
+            ctx.status(400);
+        } catch (Exception e) {
+            ctx.json("Invalid Request");
             ctx.status(400);
         }
+
     };
 
     public Handler deleteBookHandler = (ctx) -> {
         int id = Integer.parseInt(ctx.pathParam("id"));
-        boolean deleted = bookDAO.deleteBook(id);
-        if (deleted) {
-            ctx.status(204);
-        } else {
-            ctx.json("Invalid Input");
+        try {
+            boolean deleted = bookDAO.deleteBook(id);
+            if (deleted) {
+                ctx.status(204);
+            } else {
+                ctx.json("Invalid Input");
+                ctx.status(400);
+            }
+        } catch (DoesntExistException e) {
+            ctx.json("Book doesn't exist");
+            ctx.status(400);
+        } catch (Exception e) {
+            ctx.json("Invalid Request");
             ctx.status(400);
         }
+        
     };
 
     public Handler returnBookHandler = (ctx) -> {
         int id = Integer.parseInt(ctx.pathParam("id"));
-        boolean returned = bookDAO.returnBook(id);
-        if (returned) {
-            ctx.status(200);
-        } else {
-            ctx.json("Invalid Input");
+        try {
+            boolean returned = bookDAO.returnBook(id);
+            if (returned) {
+                ctx.status(200);
+            } else {
+                ctx.json("Invalid Input");
+                ctx.status(400);
+            }
+        } catch (DoesntExistException e) {
+            ctx.json("Book doesn't exist");
+            ctx.status(400);
+        } catch (Exception e) {
+            ctx.json("Invalid Request");
             ctx.status(400);
         }
     };
