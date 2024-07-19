@@ -4,7 +4,7 @@ DROP TABLE users;
 CREATE TABLE IF NOT EXISTS users (
 	user_id serial PRIMARY KEY,
 	username TEXT NOT null,
-	email TEXT,
+	email TEXT
 );
 
 CREATE TABLE IF NOT EXISTS books (
@@ -15,3 +15,5 @@ CREATE TABLE IF NOT EXISTS books (
 	checked_out boolean NOT null,
 	checked_out_by_fk int REFERENCES users (user_id)
 );
+
+INSERT INTO USERS (user_id, username, email) VALUES (0, 'Library', 'support@libary.com')
