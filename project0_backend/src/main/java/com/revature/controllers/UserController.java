@@ -1,6 +1,7 @@
 package com.revature.controllers;
 
 import com.revature.DAOs.UserDAO;
+import com.revature.Exceptions.AlreadyExistsException;
 import com.revature.Exceptions.DoesntExistException;
 import com.revature.Exceptions.UserHasBooksCheckedOutException;
 import com.revature.models.User;
@@ -30,13 +31,21 @@ public class UserController {
 
     public Handler createUserHandler = (ctx) -> {
         User user = ctx.bodyAsClass(com.revature.models.User.class);
-        User insertedUser = userDAO.createUser(user);
+        try {
+            User insertedUser = userDAO.createUser(user);
 
-        if (insertedUser != null) {
-            ctx.json(insertedUser);
-            ctx.status(201);
-        } else {
-            ctx.json("Invalid Input");
+            if (insertedUser != null) {
+                ctx.json(insertedUser);
+                ctx.status(201);
+            } else {
+                ctx.json("Invalid Input");
+                ctx.status(400);
+            }
+        } catch (AlreadyExistsException e) {
+            ctx.json("User already exists");
+            ctx.status(400);
+        } catch (Exception e) {
+            ctx.json("Invalid Request");
             ctx.status(400);
         }
     };

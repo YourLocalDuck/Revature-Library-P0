@@ -1,6 +1,7 @@
 package com.revature.controllers;
 
 import com.revature.DAOs.BookDAO;
+import com.revature.Exceptions.AlreadyExistsException;
 import com.revature.Exceptions.DoesntExistException;
 import com.revature.models.Book;
 
@@ -33,12 +34,20 @@ public class BookController {
 
     public Handler createBookHandler = (ctx) -> {
         Book book = ctx.bodyAsClass(com.revature.models.Book.class);
-        Book insertedBook = bookDAO.createBook(book);
-        if (insertedBook != null) {
-            ctx.json(insertedBook);
-            ctx.status(201);
-        } else {
-            ctx.json("Invalid Input");
+        try {
+                Book insertedBook = bookDAO.createBook(book);
+            if (insertedBook != null) {
+                ctx.json(insertedBook);
+                ctx.status(201);
+            } else {
+                ctx.json("Invalid Input");
+                ctx.status(400);
+            }
+        } catch (AlreadyExistsException e) {
+            ctx.json("Book already exists");
+            ctx.status(400);
+        } catch (Exception e) {
+            ctx.json("Invalid Request");
             ctx.status(400);
         }
     };

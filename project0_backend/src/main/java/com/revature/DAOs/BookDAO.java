@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.revature.Exceptions.AlreadyExistsException;
 import com.revature.Exceptions.DoesntExistException;
 import com.revature.models.Book;
 import com.revature.utils.ConnectionUtil;
@@ -87,7 +88,7 @@ public class BookDAO implements BookDAOInterface {
     }
 
     @Override
-    public Book createBook(Book book) {
+    public Book createBook(Book book) throws SQLException {
         try (Connection conn = ConnectionUtil.getConnection()) {
             String sql = "INSERT INTO books (book_title, book_author, book_rating, checked_out, checked_out_by_fk) VALUES (?, ?, ?, ?, ?)";
 
@@ -108,11 +109,13 @@ public class BookDAO implements BookDAOInterface {
             book.setBook_id(book_id);
 
             return book;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            if (e.getSQLState() != null && e.getSQLState().equals("23505")) {
+                throw new AlreadyExistsException();
+            } else {
+                throw e;
+            }
         }
-
-        return null;
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.revature.Exceptions.AlreadyExistsException;
 import com.revature.Exceptions.DoesntExistException;
 import com.revature.Exceptions.UserHasBooksCheckedOutException;
 import com.revature.models.User;
@@ -62,7 +63,7 @@ public class UserDAO implements UserDAOInterface {
     }
 
     @Override
-    public User createUser(User user) {
+    public User createUser(User user) throws SQLException{
         try (Connection conn = ConnectionUtil.getConnection()) {
             String sql = "INSERT INTO users (username, email) VALUES (?, ?)";
 
@@ -80,11 +81,14 @@ public class UserDAO implements UserDAOInterface {
             user.setUser_id(userId);
 
             return user;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            if (e.getSQLState() != null && e.getSQLState().equals("23505")) {
+                throw new AlreadyExistsException();
+            } else {
+                // Rethrow any other exceptions
+                throw e;
+            }
         }
-
-        return null;
     }
 
     @Override
@@ -123,7 +127,7 @@ public class UserDAO implements UserDAOInterface {
             else
                 throw new DoesntExistException();
         } catch (SQLException e) {
-            if (e.getSQLState().equals("23503")) {
+            if (e.getSQLState() != null && e.getSQLState().equals("23503")) {
                 throw new UserHasBooksCheckedOutException();
             } else {
                 // Rethrow any other exceptions
